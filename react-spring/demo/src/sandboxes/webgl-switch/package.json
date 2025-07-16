@@ -1,0 +1,41 @@
+{
+  "name": "WebGL Switch",
+  "version": "1.0.0",
+  "description": "Animating both the dom as well as the canvas with a single spring.",
+  "keywords": [
+    "react-three-fiber",
+    "threejs",
+    "webgl",
+    "gltf",
+    "physics"
+  ],
+  "main": "src/index.js",
+  "dependencies": {
+    "@react-spring/three": "*",
+    "@react-spring/web": "*",
+    "@react-three/drei": "~10.0.6",
+    "@react-three/fiber": "~9.1.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-scripts": "5.0.1",
+    "three": "0.172.0",
+    "three-stdlib": "2.35.2"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "typescript": "4.9.5"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
+}

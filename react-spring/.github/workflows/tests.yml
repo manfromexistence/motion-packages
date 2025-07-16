@@ -1,0 +1,254 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request: {}
+
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: Check for changes
+    runs-on: ubuntu-latest
+    outputs:
+      packages: ${{ steps.filter.outputs.packages }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            packages:
+              - 'packages/**'
+              - 'targets/**'
+              - 'cypress/**'
+              - 'yarn.lock'
+              - '.github/publish-ci/**/yarn.lock'
+              - '.github/workflows/*.yml'
+              - 'package.json'
+  build:
+    needs: changes
+    if: ${{ needs.changes.outputs.packages == 'true' }}
+    name: 'Build'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['20.x']
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'yarn'
+
+      - name: Install
+        run: yarn install --immutable
+
+      - name: Build
+        run: yarn build-ci --filter=!@react-spring/docs
+
+      - name: Pack
+        run: yarn package
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: animated
+          path: packages/animated/package.tgz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: core
+          path: packages/core/package.tgz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rafz
+          path: packages/rafz/package.tgz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shared
+          path: packages/shared/package.tgz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: types
+          path: packages/types/package.tgz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web
+          path: targets/web/package.tgz
+
+  test-unit:
+    name: 'Test:unit'
+    needs: [build]
+    if: ${{ needs.changes.outputs.packages == 'true' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['20.x']
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'yarn'
+
+      - name: Install
+        run: yarn install --immutable
+
+      - name: Build
+        run: yarn build-ci
+
+      - name: Test
+        run: yarn test:unit
+
+  test-types:
+    name: 'Test:types with TS ${{ matrix.ts }}'
+    needs: [build]
+    if: ${{ needs.changes.outputs.packages == 'true' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['20.x']
+        ts: ['5.0', '5.1', '5.2']
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'yarn'
+
+      - name: Install
+        run: yarn install --immutable
+
+      - name: Install TypeScript ${{ matrix.ts }}
+        run: yarn add typescript@${{ matrix.ts }}
+
+      - name: Build
+        run: yarn build-ci
+
+      - name: Test
+        run: |
+          yarn tsc --version
+          yarn test:ts
+
+  # test-e2e:
+  #   needs: [build]
+  #   if: ${{ needs.changes.outputs.packages == 'true' }}
+  #   name: 'Test:E2E'
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       node: ['20.x']
+
+  #   steps:
+  #     - name: Checkout repo
+  #       uses: actions/checkout@v4
+
+  #     - name: Setup node ${{ matrix.node }}
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: ${{ matrix.node }}
+  #         cache: 'yarn'
+
+  #     - name: Install
+  #       run: yarn install --immutable
+
+  #     - name: Build
+  #       run: yarn build-ci
+
+  #     - name: Test
+  #       run: yarn test:e2e
+
+  test-published-artifact:
+    needs: [build]
+    if: ${{ needs.changes.outputs.packages == 'true' }}
+    name: 'Test:publish'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['18.x']
+        example: ['cra5', 'next', 'vite', 'node-standard', 'node-esm']
+    defaults:
+      run:
+        working-directory: ./.github/publish-ci/${{ matrix.example }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'yarn'
+
+      - name: Install
+        run: yarn install --immutable
+
+      - name: Remove existing @react-spring/web
+        run: yarn remove @react-spring/web
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: ./.github/publish-ci/${{ matrix.example }}
+
+      - name: Check folder contents
+        run: ls -l .
+
+      - name: Install RS build artifacts
+        run: yarn add ./web/package.tgz ./animated/package.tgz ./core/package.tgz ./rafz/package.tgz ./shared/package.tgz ./types/package.tgz
+
+      - name: Show installed RS versions
+        run: yarn info @react-spring/web && yarn why @react-spring/web
+
+      - name: Build example
+        run: yarn build
+
+      - name: Run test step
+        run: yarn test
+
+  are-the-types-wrong:
+    name: Check package config with are-the-types-wrong
+
+    needs: [build]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['18.x']
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: web
+
+      - name: show folder
+        run: ls -l .
+
+      - name: Run are-the-types-wrong
+        run: npx @arethetypeswrong/cli ./package.tgz --format table --ignore-rules false-cjs

@@ -1,0 +1,39 @@
+{
+  "name": "Floating Button",
+  "version": "1.0.0",
+  "description": "A small floating button like Facebook's desktop messenger built with radix & stitches",
+  "keywords": [
+    "use-gesture",
+    "useSpring",
+    "useSprings",
+    "interpolation",
+    "stitches",
+    "radix-ui"
+  ],
+  "main": "src/index.tsx",
+  "dependencies": {
+    "@react-spring/web": "*",
+    "@stitches/react": "1.2.8",
+    "@use-gesture/react": "10.3.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-scripts": "5.0.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "typescript": "4.9.5"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
+}

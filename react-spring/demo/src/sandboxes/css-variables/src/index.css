@@ -1,0 +1,25 @@
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  font-family: system-ui;
+  margin: 0;
+}
+
+*,
+*:after,
+*:before {
+  box-sizing: border-box;
+}
+
+:root {
+  --step0: #ff615d;
+  --step1: #bad5ea;
+  --step2: #fd8769;
+  --step3: #356d94;
+  --step4: #ffdcb3;
+}

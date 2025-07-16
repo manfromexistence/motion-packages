@@ -1,0 +1,34 @@
+{
+  "name": "Horizontal Parallax",
+  "description": "The real test of a parallax component, horizontal scrolling",
+  "keywords": [
+    "Parallax",
+    "horizontal"
+  ],
+  "version": "1.0.0",
+  "main": "src/index.tsx",
+  "dependencies": {
+    "@react-spring/parallax": "*",
+    "@react-spring/web": "*",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-scripts": "5.0.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ],
+  "devDependencies": {
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "typescript": "4.9.5"
+  }
+}
