@@ -1,9 +1,0 @@
-{
-  "extends": ["//"],
-  "tasks": {
-    "build": {
-      "inputs": ["app/**"],
-      "outputs": ["build/**", "public/build/**"]
-    }
-  }
-}
